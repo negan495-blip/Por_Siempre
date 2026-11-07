@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¡Feliz Cumpleaños!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        #ui {
+            position: absolute;
+            top: 25px;
+            width: 100%;
+            text-align: center;
+            z-index: 10;
+            color: #fff;
+            pointer-events: none;
+            text-shadow: 0 0 12px rgba(255, 105, 180, 0.9);
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            font-weight: 300;
+        }
+        .message-card {
+            position: absolute;
+            background: rgba(15, 15, 25, 0.95);
+            border: 2px solid #ff69b4;
+            box-shadow: 0 0 30px rgba(255, 20, 147, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+            color: #ffe4e1;
+            width: 320px;
+            max-width: 90vw;
+            text-align: center;
+            z-index: 20;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        .message-card button {
+            margin-top: 15px;
+            background: #ff1493;
+            border: none;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 0 10px #ff69b4;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="ui">✨ Toca las cajas de regalo para abrirlas ✨</div>
+    <canvas id="spaceCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('spaceCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // --- 1. MENSAJES DE CUMPLEAÑOS ---
+        const MESSAGES = [
+            ¡Felices 21 años! 🌟\n\nHoy me puse a pensar que, por más que vivamos lejos, la luna que ves tú allá es la misma que veo yo acá, un pensamiento que me da paz. Aunque me pesa no estar ahí para brindar, no iba a dejar pasar el día sin decirte algo. Más que los 21, te deseo un año que no se parezca a otro, uno que, al recordarlo, te haga sentir que realmente viviste, que logres no solo objetivos, sino esa calma profunda de saber que valió la pena. Que cada noche de este año, cuando mires hacia arriba, recuerdes que tu luz, como la de las estrellas, es única y llega más lejos de lo que imaginas.\n\n¡Felicidades y disfruta mucho tu día!,
+            
+            ¡Felices 21 años! 🌙\n\nA veces me detengo a pensar en cómo los años pasan y, aunque los kilómetros nos separen hoy, sé que el tiempo nos sigue encontrando en los mismos recuerdos y en las ganas de vernos crecer. Brindo contigo desde la distancia por esta nueva vuelta al sol. Que estos 21 te traigan sorpresas genuinas, valentía para elegir lo que te hace bien y la certeza de que siempre estoy celebrándote, sin importar el mapa.\n\n¡Disfruta cada segundo de tu día!,
+            
+            ¡Muy feliz cumpleaños! ✨\n\nEstaba pensando en ti y en cómo, a pesar de la distancia, hay cosas que no cambian: nuestra complicidad sigue intacta. Aunque me muero por darte ese abrazo en persona, me consuela saber que sigo estando cerquita en tus momentos importantes. Que este año de vida te regale risas imprevistas, aprendizajes bonitos y esa paz que te hace sentir en casa, estés donde estés.\n\n¡Pásala increíble y come mucho pastel por mí!,
+            
+            ¡Felices 21! 🌟\n\nQué bonito es verte llegar a esta edad con tanta luz y tantas ganas de comerte el mundo. Aunque hoy no podamos brindar cara a cara, quiero que sepas que mis mejores deseos vuelan directo hacia ti. Que este año te atrevas a lo nuevo, que rompas tus propios límites y que cada vez que mires al cielo, recuerdes que hay alguien muy orgulloso de ti aplaudiéndote desde lejos.\n\n¡Felicidades y que sea tu mejor año hasta ahora!,
+            
+            ¡Felices 21 años! 🌌\n\nHoy el día se siente diferente, y aunque me encantaría estar ahí para celebrarte en persona, la distancia se siente un poquito más corta sabiendo cuánto te quiero. Que este nuevo año te sorprenda con momentos sencillos pero inolvidables, con abrazos que curen cualquier ausencia y con la absoluta certeza de que vas por el camino correcto.\n\n¡Que tengas un día tan bonito como tú!,
+            
+            ¡Muchas felicidades en tus 21! ✨\n\nEstaba pensando en lo rápido que pasa el tiempo y en lo orgulloso(a) que estoy de la persona en la que te has convertido. Aunque hoy nos toque celebrar a través de una pantalla, brindo por ti, por tus sueños y por todo lo bonito que está por venir a tu vida. Que este año te de los triunfos que buscas y la paz que mereces.\n\n¡Disfruta al máximo tu día, te mando un abrazo gigante hasta allá!
+        ];
+
+        // --- 2. ESTRELLAS ---
+        const stars = [];
+        for (let i = 0; i < 300; i++) {
+            stars.push({
+                x: Math.random() * window.innerWidth,
+                y: Math.random() * window.innerHeight,
+                size: Math.random() * 2 + 1,
+                alpha: Math.random()
+            });
+        }
+
+        // --- 3. CAJAS DE REGALO FIJAS Y SEGURAS ---
+        // Se calculan con porcentajes de pantalla para asegurar que NUNCA queden fuera
+        function getGiftPositions() {
+            const cx = window.innerWidth / 2;
+            const cy = window.innerHeight / 2;
+            const rx = Math.min(window.innerWidth * 0.35, 280);
+            const ry = Math.min(window.innerHeight * 0.30, 180);
+
+            const list = [];
+            for (let i = 0; i < 6; i++) {
+                const angle = (i / 6) * Math.PI * 2;
+                list.push({
+                    id: i,
+                    x: cx + Math.cos(angle) * rx,
+                    y: cy + Math.sin(angle) * ry,
+                    size: 60,
+                    opened: false
+                });
+            }
+            return list;
+        }
+
+        let gifts = getGiftPositions();
+
+        window.addEventListener('resize', () => {
+            // Reajustar posiciones de regalos si cambian tamaño de pantalla
+            const oldOpened = gifts.map(g => g.opened);
+            gifts = getGiftPositions();
+            gifts.forEach((g, i) => g.opened = oldOpened[i]);
+        });
+
+        // --- 4. FUEGOS ARTIFICIALES ---
+        let particles = [];
+        function createFireworks(x, y) {
+            for (let i = 0; i < 50; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 4 + 2;
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    alpha: 1,
+                    color: ['#ff1493', '#ff69b4', '#ffd700', '#00ffff'][Math.floor(Math.random() * 4)]
+                });
+            }
+        }
+
+        // --- 5. CLICS ---
+        window.addEventListener('click', (e) => {
+            const mouseX = e.clientX;
+            const mouseY = e.clientY;
+
+            gifts.forEach(gift => {
+                if (!gift.opened) {
+                    const dist = Math.hypot(mouseX - gift.x, mouseY - gift.y);
+                    if (dist < gift.size) {
+                        gift.opened = true;
+                        createFireworks(gift.x, gift.y);
+                        showCard(gift.id, gift.x, gift.y);
+                    }
+                }
+            });
+        });
+
+        function showCard(id, x, y) {
+            const card = document.createElement('div');
+            card.className = 'message-card';
+            
+            card.style.left = Math.min(Math.max(20, x - 160), window.innerWidth - 340) + 'px';
+            card.style.top = Math.min(Math.max(60, y - 140), window.innerHeight - 320) + 'px';
+
+            const textFormatted = MESSAGES[id].replace(/\n/g, '<br>');
+            card.innerHTML = `
+                <div style="max-height: 220px; overflow-y: auto; padding-right: 5px; text-align: left;">${textFormatted}</div>
+                <button onclick="this.parentElement.remove()">Cerrar 🌟</button>
+            `;
+            document.body.appendChild(card);
+        }
+
+        // --- 6. ANIMACIÓN ---
+        function animate() {
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Dibujar estrellas estáticas pero brillantes
+            stars.forEach(star => {
+                ctx.fillStyle = rgba(255, 255, 255, ${star.alpha});
+                ctx.fillRect(star.x, star.y, star.size, star.size);
+            });
+
+            // Dibujar regalos
+            gifts.forEach((gift) => {
+                if (!gift.opened) {
+                    ctx.save();
+                    ctx.translate(gift.x, gift.y);
+                    
+                    ctx.shadowColor = '#ff1493';
+                    ctx.shadowBlur = 20;
+
+                    // Caja
+                    ctx.fillStyle = '#ff2a75';
+                    ctx.fillRect(-gift.size/2, -gift.size/2, gift.size, gift.size);
+
+                    // Listones
+                    ctx.fillStyle = '#ffd700';
+                    ctx.fillRect(-gift.size/2, -8, gift.size, 16);
+                    ctx.fillRect(-8, -gift.size/2, 16, gift.size);
+
+                    // Tapa
+                    ctx.fillStyle = '#ff0055';
+                    ctx.fillRect(-gift.size/2 - 4, -gift.size/2 - 12, gift.size + 8, 14);
+
+                    // Número
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold 18px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(🎁 #${gift.id + 1}, 0, -gift.size/2 - 28);
+
+                    ctx.restore();
+                }
+            });
+
+            // Partículas
+            particles.forEach((p, index) => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.alpha -= 0.025;
+
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, p.alpha);
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                if (p.alpha <= 0) {
+                    particles.splice(index, 1);
+                }
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
